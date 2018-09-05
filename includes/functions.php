@@ -193,7 +193,7 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 		return $processor_data;
 	}
 
-	$callback = add_query_arg(
+	$return_url = add_query_arg(
 		array(
 			'cf-payfast-payment-confirmation' => 'payfast',
 			'cf_tp' => $transdata['transient'], // add in the cf_tp ( Caldera Forms Transient Process - this is a shortcut to reprocess a transient form submission - Document this please! )
@@ -213,7 +213,7 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 	$body = array(
 		"merchant_id" => "10006218",
 		"merchant_key"=> "yn6rdi19h7qnd",
-		"return_url" => $callback,
+		"return_url" => url_encode( $return_url ),
 		"amount" => "100",
 		"item_name" => 'test'
 	);
@@ -223,7 +223,6 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 	$url = "https://sandbox.payfast.co.za/eng/process/";
 	$url = add_query_arg( $body, $url );
 	$transdata['cf_payfast' ][ $proccessid ][ 'url' ] = $url;
-	$transdata['cf_payfast' ][ $proccessid ][ 'CheckoutId' ] = 'something';
 	$transdata['cf_payfast' ][ $proccessid ][ 'process_object' ] = $processor_data;
 
 
