@@ -35,7 +35,7 @@ define( 'CF_PAYFAST_URL',  plugin_dir_url( __FILE__ ) );
 define( 'CF_PAYFAST_VER', '1.0' );
 
 // Add language text domain
-// add_action( 'init', 'cf_payfast_load_plugin_textdomain' );
+add_action( 'init', 'cf_payfast_load_plugin_textdomain' );
 
 // filter to add processor to regestered processors array
 add_filter( 'caldera_forms_get_form_processors', 'cf_payfast_register' );

@@ -5,6 +5,13 @@
 
 
 /**
+ * Load plugin's text domain to support multi-language.
+ */
+function cf_payfast_load_plugin_textdomain() {
+	load_plugin_textdomain( 'cf-payfast', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+}
+
+/**
  * Registers the payfast for Caldera Forms Processor
  *
  * @uses "caldera_forms_get_form_processors" filter
