@@ -181,19 +181,18 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 		"merchant_key"=> $payment_data['merchant_key'],
 		"return_url" => $transdata['cf_payfast']['return_url'],
 		"cancel_url" => $transdata['cf_payfast']['cancel_url'],
-		"m_payment_id" => $random_number,
-		"amount" => $payment_data['initial_amount'],
-		"item_name" => $payment_data['item_name'],
-		"item_description" => $payment_data['item_description'],
 		"name_first" => $payment_data['name_first'],
 		"name_last" => $payment_data['name_last'],
 		"email_address" => $payment_data['email_address'],
 		"cell_number" => $payment_data['cell_number'],
+		"m_payment_id" => $random_number,
+		"amount" => $payment_data['initial_amount'],
+		"item_name" => $payment_data['item_name'],
+		"item_description" => $payment_data['item_description'],
 		// "email_confirmation" => $payment_data['email_confirmation'],
 		// "confirmation_address" => $payment_data['confirmation_address'],
 		"payment_method" => $payment_data['payment_method'],
 	);
-
 
 	// Let's handle the recurring payments now.
 	if ( ! empty( $payment_data['recurring'] ) ) {
@@ -208,10 +207,8 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 		$body = array_merge( $body, $recurring_payment_args );
 	}
 
-
 	$body = apply_filters( 'cf_payfast_checkout_parameters', $body );
 
-	// build the URL.
 	$url = add_query_arg( $body, $url );
 	
 	$transdata['cf_payfast' ][ $proccessid ][ 'url' ] = $url;
