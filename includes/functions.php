@@ -176,11 +176,12 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 	$random_number = substr( md5( $payment_data['email_address'] ), 0, 10 );
 
 	// Initial information to be passed through to PayFast.
+	// URL Encode the return and cancel URL's to support GET vars being passed back
 	$body = array(
 		"merchant_id" => $payment_data['merchant_id'],
 		"merchant_key"=> $payment_data['merchant_key'],
-		"return_url" => $transdata['cf_payfast']['return_url'],
-		"cancel_url" => $transdata['cf_payfast']['cancel_url'],
+		"return_url" => urlencode ($transdata['cf_payfast']['return_url']),
+		"cancel_url" => urlencode ($transdata['cf_payfast']['cancel_url']),
 		"m_payment_id" => $random_number,
 		"amount" => $payment_data['initial_amount'],
 		"item_name" => str_replace( " ", "+", $payment_data['item_name'] ),
@@ -195,7 +196,7 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 
 	if ( ! empty( $payment_data['payment_method'] ) && $payment_data['payment_method'] !== "All Payment Methods" ) {
 		$body["payment_method"] = $payment_data['payment_method'];
-	} 
+	}
 
 
 	// Let's handle the recurring payments now.
@@ -216,10 +217,9 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 
 	// build the URL.
 	$url = add_query_arg( $body, $url );
-	
+
 	$transdata['cf_payfast' ][ $proccessid ][ 'url' ] = $url;
 	$transdata['cf_payfast' ][ $proccessid ][ 'process_object' ] = $processor_data;
-
 
 	return $processor_data;
 }
@@ -373,7 +373,7 @@ function cf_payfast_express_set_transient($form, $referrer, $process_id ){
 		return $transdata;
 	} else {
 		$return_url = $referrer['scheme'] . '://' . $referrer['host'] . $referrer['path'];
-		
+
 		// Send the user back to form if they cancel.
 		$transdata['cf_payfast']['cancel_url'] = $return_url;
 
@@ -394,4 +394,12 @@ function cf_payfast_express_set_transient($form, $referrer, $process_id ){
 
 	return $transdata;
 
+}
+
+
+/**
+ * Load the plugin text-domain
+*/
+function cf_payfast_load_plugin_textdomain(){
+	load_plugin_textdomain( 'cf-payfast', FALSE, CF_PAYFAST_PATH . 'languages');
 }

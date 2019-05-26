@@ -5,7 +5,7 @@
  * Plugin URI: https://yoohooplugins.com
  * Author: Yoohoo Plugins
  * Author URI: https://yoohooplugins.com
- * Version: 1.0
+ * Version: 1.1
  * License: GPL2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: cf-payfast
@@ -26,6 +26,13 @@
  * You should have received a copy of the GNU General Public License
  * along with Caldera Forms PayFast. If not, see https://www.gnu.org/licenses/gpl-2.0.html.
  */
+
+/**
+ * 1.1
+ * Added text domain support
+ * Resolved error in AJAX call which would cause submission failure
+ * Added URL Encoding to Return/Cancel URL's as this is required to support GET vars being returned from PayFast
+*/
 
 defined( 'ABSPATH' ) or exit;
 
