@@ -167,12 +167,6 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 		$url = "https://payfast.co.za/eng/process/";
 	}
 
-	// Try to catch sandbox details with live URL - throw an error.
-	if ( $payment_data['merchant_id'] === '10006218' && strpos( $url, 'sandbox' ) == false ) {
-		$processor_data->add_error( "You are using sandbox details with PayFast's live URL. Please check your merchant details.", 'cf-payfast' );
-		return $processor_data;
-	}
-
 	$random_number = substr( md5( $payment_data['email_address'] ), 0, 10 );
 
 	// Initial information to be passed through to PayFast.
@@ -180,11 +174,11 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 	$body = array(
 		"merchant_id" => $payment_data['merchant_id'],
 		"merchant_key"=> $payment_data['merchant_key'],
-		"return_url" => urlencode ($transdata['cf_payfast']['return_url']),
-		"cancel_url" => urlencode ($transdata['cf_payfast']['cancel_url']),
+		"return_url" => $payment_data['sandbox'] == '1' ? urlencode($transdata['cf_payfast']['return_url']) : $transdata['cf_payfast']['return_url'],
+		"cancel_url" => $payment_data['sandbox'] == '1' ? urlencode($transdata['cf_payfast']['cancel_url']) : $transdata['cf_payfast']['cancel_url'],
 		"m_payment_id" => $random_number,
 		"amount" => $payment_data['initial_amount'],
-		"item_name" => str_replace( " ", "+", $payment_data['item_name'] ),
+		"item_name" => $payment_data['item_name'] ? str_replace( " ", "+", $payment_data['item_name'] ) : 'Payment For ' . get_option('blogname'),
 		"item_description" => str_replace( " ", "+", $payment_data['item_description'] ),
 		"name_first" => $payment_data['name_first'],
 		"name_last" => $payment_data['name_last'],
@@ -294,7 +288,7 @@ function cf_payfast_fields() {
 		array(
 			'id' => 'item_description',
 			'label' => __( 'Item Description', 'cf-payfast' ),
-			'required' => false,
+			'required' => true,
 		),
 		array(
 			'id' => 'recurring',
