@@ -203,7 +203,7 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 			"subscription_type" => $payment_data['recurring'],
 			"recurring_amount" => number_format(sprintf("%.2f", $payment_data['recurring_amount']), 2, '.', ''),
 			"frequency" => $payment_data['frequency'],
-			"cycles" => $payment_data['billing_cycles']
+			"cycles" => ! empty( $payment_data['billing_cycles'] ) ? intval( $payment_data['billing_cycles'] ) : 0
 		);
 
 		// merge both arrays into one.

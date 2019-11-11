@@ -101,6 +101,15 @@ if( ! is_ssl() ){
 
 </div>
 
+<div class="caldera-config-group">
+	<label><?php _e( 'Passphrase', 'cf-payfast' ); ?></label>
+		<div class="caldera-config-field">		
+			<input type="text" id="{{_id}}_passphrase" class="block-input field-config" name="{{_name}}[passphrase]" value="{{passphrase}}" >
+		</div>
+	<small>Note: This is an optional security feature, set in your PayFast Dashboard. Leave empty to exclude.</small>
+</div>
+<br/>
+
 
 <div class="caldera-config-group">
 	<label for="{{_id}}_recurring"><?php _e( 'Recurring', 'cf-payfast' ); ?></label>
@@ -135,15 +144,6 @@ if( ! is_ssl() ){
 		<input type="number" id="{{_id}}_billing_cycles" class="block-input field-config" name="{{_name}}[billing_cycles]" value="{{billing_cycles}}" min="0" max="999">
 	</div>
 	<small>The number of payments/cycles that will occur for this subscription. Set to 0 for infinity.</small>
-</div>
-
-<strong>Optional Fields</strong>
-<div class="caldera-config-group">
-	<label><?php _e('Merchant Passphrase', 'cf-payfast'); ?></label>
-	<div class="caldera-config-field">		
-		<input type="text" id="{{_id}}_passphrase" class="block-input field-config" name="{{_name}}[passphrase]" value="{{passphrase}}" >
-	</div>
-	<small>Note: This is an optional security feature, set in your PayFast Dashboard. Leave empty to exclude.</small>
 </div>
 
 <style type="text/css">
