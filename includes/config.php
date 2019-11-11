@@ -137,6 +137,15 @@ if( ! is_ssl() ){
 	<small>The number of payments/cycles that will occur for this subscription. Set to 0 for infinity.</small>
 </div>
 
+<strong>Optional Fields</strong>
+<div class="caldera-config-group">
+	<label><?php _e('Merchant Passphrase', 'cf-payfast'); ?></label>
+	<div class="caldera-config-field">		
+		<input type="text" id="{{_id}}_passphrase" class="block-input field-config" name="{{_name}}[passphrase]" value="{{passphrase}}" >
+	</div>
+	<small>Note: This is an optional security feature, set in your PayFast Dashboard. Leave empty to exclude.</small>
+</div>
+
 <style type="text/css">
 	.recurring-show{display:none;}
 </style>

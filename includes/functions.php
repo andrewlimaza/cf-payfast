@@ -5,13 +5,6 @@
 
 
 /**
- * Load plugin's text domain to support multi-language.
- */
-function cf_payfast_load_plugin_textdomain() {
-	load_plugin_textdomain( 'cf-payfast', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-}
-
-/**
  * Registers the payfast for Caldera Forms Processor
  *
  * @uses "caldera_forms_get_form_processors" filter
@@ -60,9 +53,10 @@ function cf_payfast_pre_process( $config, $form, $proccesid ) {
 	 * Complete submission after coming back from payfast.
 	 */
 	if( !empty( $_REQUEST['cf-payfast-payment-confirmation'] ) && 'payfast' == $_REQUEST['cf-payfast-payment-confirmation'] ){
-		if ( isset( $_GET[ 'processid' ] ) && isset( $transdata[ 'cf_payfast' ] ) && isset( $transdata[ 'cf_payfast' ][ $_GET[ 'processid' ] ] ) ) {
+        // var_dump($_REQUEST);
+		if ( isset( $_REQUEST[ 'processid' ] ) && isset( $transdata[ 'cf_payfast' ] ) && isset( $transdata[ 'cf_payfast' ][ $_REQUEST[ 'processid' ] ] ) ) {
 
-			$processor_data = $transdata[ 'cf_payfast' ][ $_GET[ 'processid' ] ][ 'process_object' ];
+			$processor_data = $transdata[ 'cf_payfast' ][ $_REQUEST[ 'processid' ] ][ 'process_object' ];
 			if ( ! is_object( $processor_data )  ){
 				return array(
 					'type' => 'error',
@@ -122,6 +116,8 @@ function cf_payfast_pre_process( $config, $form, $proccesid ) {
 
 	}
 
+	return;
+
 }
 
 
@@ -171,13 +167,7 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 	if ( $payment_data['sandbox'] == '1') {
 		$url = "https://sandbox.payfast.co.za/eng/process/";
 	} else {
-		$url = "https://payfast.co.za/eng/process/";
-	}
-
-	// Try to catch sandbox details with live URL - throw an error.
-	if ( $payment_data['merchant_id'] === '10006218' && strpos( $url, 'sandbox' ) == false ) {
-		$processor_data->add_error( "You are using sandbox details with PayFast's live URL. Please check your merchant details.", 'cf-payfast' );
-		return $processor_data;
+		$url = "https://www.payfast.co.za/eng/process/";
 	}
 
 	$random_number = substr( md5( $payment_data['email_address'] ), 0, 10 );
@@ -188,24 +178,30 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 		"merchant_key"=> $payment_data['merchant_key'],
 		"return_url" => $transdata['cf_payfast']['return_url'],
 		"cancel_url" => $transdata['cf_payfast']['cancel_url'],
+		"m_payment_id" => $random_number,
+		"amount" => number_format(sprintf("%.2f", $payment_data['initial_amount']), 2, '.', ''),
+		"item_name" => $payment_data['item_name'] ? $payment_data['item_name'] : 'Payment For ' . get_option('blogname'),
+		"item_description" => $payment_data['item_description'],
 		"name_first" => $payment_data['name_first'],
 		"name_last" => $payment_data['name_last'],
 		"email_address" => $payment_data['email_address'],
 		"cell_number" => $payment_data['cell_number'],
-		"m_payment_id" => $random_number,
-		"amount" => $payment_data['initial_amount'],
-		"item_name" => $payment_data['item_name'],
-		"item_description" => $payment_data['item_description'],
-		// "email_confirmation" => $payment_data['email_confirmation'],
-		// "confirmation_address" => $payment_data['confirmation_address'],
-		"payment_method" => $payment_data['payment_method'],
 	);
+
+	if ( ! empty( $payment_data['payment_method'] ) && $payment_data['payment_method'] !== "All Payment Methods" ) {
+		$body["payment_method"] = $payment_data['payment_method'];
+	}
+
+	if(!empty($payment_method['passphrase'])){
+		$body['passphrase'] = $payment_method['passphrase'];
+	}
+
 
 	// Let's handle the recurring payments now.
 	if ( ! empty( $payment_data['recurring'] ) ) {
 		$recurring_payment_args = array(
 			"subscription_type" => $payment_data['recurring'],
-			"recurring_amount" => $payment_data['recurring_amount'],
+			"recurring_amount" => number_format(sprintf("%.2f", $payment_data['recurring_amount']), 2, '.', ''),
 			"frequency" => $payment_data['frequency'],
 			"cycles" => $payment_data['billing_cycles']
 		);
@@ -216,11 +212,16 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 
 	$body = apply_filters( 'cf_payfast_checkout_parameters', $body );
 
-	$url = add_query_arg( $body, $url );
-	
-	$transdata['cf_payfast' ][ $proccessid ][ 'url' ] = $url;
-	$transdata['cf_payfast' ][ $proccessid ][ 'process_object' ] = $processor_data;
+	/* Trim and encode as per API spec */
+	foreach ($body as $key => $value) {
+		$body[$key] = urlencode($value);
+	}
 
+	// build the URL.
+	$url = add_query_arg( $body, $url );
+
+	$transdata[ 'cf_payfast' ][ $proccessid ][ 'url' ] = $url;
+	$transdata[ 'cf_payfast' ][ $proccessid ][ 'process_object' ] = $processor_data;
 
 	return $processor_data;
 }
@@ -255,6 +256,14 @@ function cf_payfast_fields() {
 			'desc' => __( 'Enter your payfast application key.', 'cf-payfast' ),
 			'type' => 'text',
 			'required' => true,
+			'magic' => false,
+		),
+		array(
+			'id'   => 'passphrase',
+			'label' => __( 'Merchant Passphrase', 'cf-payfast' ),
+			'desc' => __( 'Enter your passphrase. This is an optional security feature, set in your PayFast Dashboard. Leave empty to exclude.', 'cf-payfast' ),
+			'type' => 'text',
+			'required' => false,
 			'magic' => false,
 		),
 		array(
@@ -295,7 +304,7 @@ function cf_payfast_fields() {
 		array(
 			'id' => 'item_description',
 			'label' => __( 'Item Description', 'cf-payfast' ),
-			'required' => false,
+			'required' => true,
 		),
 		array(
 			'id' => 'recurring',
@@ -344,7 +353,7 @@ function cf_payfast_fields() {
 function cf_payfast_redirect($url, $form, $processid){
 	global $transdata;
 
-	if( ! empty( $transdata['cf_payfast' ][ $processid ][ 'url' ] ) && empty( $_GET['error'] ) && empty( $_GET['error_description'] ) ) {
+	if( ! empty( $transdata['cf_payfast' ][ $processid ][ 'url' ] ) && empty( $_REQUEST['error'] ) && empty( $_REQUEST['error_description'] ) ) {
 		$saved_url = $transdata['cf_payfast' ][ $processid ][ 'url' ];
 
 		return $saved_url;
@@ -370,11 +379,11 @@ function cf_payfast_redirect($url, $form, $processid){
 function cf_payfast_express_set_transient($form, $referrer, $process_id ){
 	global $transdata;
 
-	if ( isset( $transdata['cf_payfast'][ 'return_url' ] ) && isset( $transdata['cf_payfast']['cancel_url'] ) ) {
-		return $transdata;
-	} else {
+	// if ( isset( $transdata['cf_payfast'][ 'return_url' ] ) && isset( $transdata['cf_payfast']['cancel_url'] ) ) {
+	// 	return $transdata;
+	// } else {
 		$return_url = $referrer['scheme'] . '://' . $referrer['host'] . $referrer['path'];
-		
+
 		// Send the user back to form if they cancel.
 		$transdata['cf_payfast']['cancel_url'] = $return_url;
 
@@ -390,9 +399,18 @@ function cf_payfast_express_set_transient($form, $referrer, $process_id ){
 	}
 		$return_url = add_query_arg( $queryvars, $return_url );
 
-		$transdata['cf_payfast'][ 'return_url' ] = urlencode( $return_url );
-	}
+		$transdata['cf_payfast'][ 'return_url' ] = $return_url;
+
+	// }
 
 	return $transdata;
 
+}
+
+
+/**
+ * Load the plugin text-domain
+*/
+function cf_payfast_load_plugin_textdomain(){
+	load_plugin_textdomain( 'cf-payfast', FALSE, CF_PAYFAST_PATH . 'languages');
 }
