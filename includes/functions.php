@@ -177,32 +177,33 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 	$body = array(
 		"merchant_id" => $payment_data['merchant_id'],
 		"merchant_key"=> $payment_data['merchant_key'],
-		"return_url" => $payment_data['sandbox'] == '1' ? urlencode($transdata['cf_payfast']['return_url']) : urlencode($transdata['cf_payfast']['return_url']),
-		"cancel_url" => $payment_data['sandbox'] == '1' ? urlencode($transdata['cf_payfast']['cancel_url']) : urlencode($transdata['cf_payfast']['cancel_url']),
+		"return_url" => $transdata['cf_payfast']['return_url'],
+		"cancel_url" => $transdata['cf_payfast']['cancel_url'],
 		"m_payment_id" => $random_number,
-		"amount" => $payment_data['initial_amount'],
-		"item_name" => $payment_data['item_name'] ? str_replace( " ", "+", $payment_data['item_name'] ) : 'Payment For ' . get_option('blogname'),
-		"item_description" => str_replace( " ", "+", $payment_data['item_description'] ),
+		"amount" => number_format(sprintf("%.2f", $payment_data['initial_amount']), 2, '.', ''),
+		"item_name" => $payment_data['item_name'] ? $payment_data['item_name'] : 'Payment For ' . get_option('blogname'),
+		"item_description" => $payment_data['item_description'],
 		"name_first" => $payment_data['name_first'],
 		"name_last" => $payment_data['name_last'],
 		"email_address" => $payment_data['email_address'],
 		"cell_number" => $payment_data['cell_number'],
-		// "email_confirmation" => $payment_data['email_confirmation'],
-		// "confirmation_address" => $payment_data['confirmation_address'],
 	);
 
 	if ( ! empty( $payment_data['payment_method'] ) && $payment_data['payment_method'] !== "All Payment Methods" ) {
 		$body["payment_method"] = $payment_data['payment_method'];
 	}
 
+	if(!empty($payment_method['passphrase'])){
+		$body['passphrase'] = $payment_method['passphrase'];
+	}
 
 	// Let's handle the recurring payments now.
 	if ( ! empty( $payment_data['recurring'] ) ) {
 		$recurring_payment_args = array(
 			"subscription_type" => $payment_data['recurring'],
-			"recurring_amount" => $payment_data['recurring_amount'],
+			"recurring_amount" => number_format(sprintf("%.2f", $payment_data['recurring_amount']), 2, '.', ''),
 			"frequency" => $payment_data['frequency'],
-			"cycles" => $payment_data['billing_cycles']
+			"cycles" => ! empty( $payment_data['billing_cycles'] ) ? intval( $payment_data['billing_cycles'] ) : 0
 		);
 
 		// merge both arrays into one.
@@ -212,11 +213,16 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 
 	$body = apply_filters( 'cf_payfast_checkout_parameters', $body );
 
+	/* Trim and encode as per API spec */
+	foreach ($body as $key => $value) {
+		$body[$key] = urlencode($value);
+	}
+
 	// build the URL.
 	$url = add_query_arg( $body, $url );
 
-	$transdata['cf_payfast' ][ $proccessid ][ 'url' ] = $url;
-	$transdata['cf_payfast' ][ $proccessid ][ 'process_object' ] = $processor_data;
+	$transdata[ 'cf_payfast' ][ $proccessid ][ 'url' ] = $url;
+	$transdata[ 'cf_payfast' ][ $proccessid ][ 'process_object' ] = $processor_data;
 
 	return $processor_data;
 }
@@ -251,6 +257,14 @@ function cf_payfast_fields() {
 			'desc' => __( 'Enter your payfast application key.', 'cf-payfast' ),
 			'type' => 'text',
 			'required' => true,
+			'magic' => false,
+		),
+		array(
+			'id'   => 'passphrase',
+			'label' => __( 'Merchant Passphrase', 'cf-payfast' ),
+			'desc' => __( 'Enter your passphrase. This is an optional security feature, set in your PayFast Dashboard. Leave empty to exclude.', 'cf-payfast' ),
+			'type' => 'text',
+			'required' => false,
 			'magic' => false,
 		),
 		array(

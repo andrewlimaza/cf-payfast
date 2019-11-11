@@ -5,7 +5,7 @@
  * Plugin URI: https://yoohooplugins.com
  * Author: Yoohoo Plugins
  * Author URI: https://yoohooplugins.com
- * Version: 1.3
+ * Version: 1.4
  * License: GPL2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: cf-payfast
@@ -32,7 +32,7 @@ defined( 'ABSPATH' ) or exit;
 // define constants
 define( 'CF_PAYFAST_PATH',  plugin_dir_path( __FILE__ ) );
 define( 'CF_PAYFAST_URL',  plugin_dir_url( __FILE__ ) );
-define( 'CF_PAYFAST_VER', '1.0' );
+define( 'CF_PAYFAST_VER', '1.4' );
 
 // Add language text domain
 add_action( 'init', 'cf_payfast_load_plugin_textdomain' );

@@ -101,6 +101,15 @@ if( ! is_ssl() ){
 
 </div>
 
+<div class="caldera-config-group">
+	<label><?php _e( 'Passphrase', 'cf-payfast' ); ?></label>
+		<div class="caldera-config-field">		
+			<input type="text" id="{{_id}}_passphrase" class="block-input field-config" name="{{_name}}[passphrase]" value="{{passphrase}}" >
+		</div>
+	<small>Note: This is an optional security feature, set in your PayFast Dashboard. Leave empty to exclude.</small>
+</div>
+<br/>
+
 
 <div class="caldera-config-group">
 	<label for="{{_id}}_recurring"><?php _e( 'Recurring', 'cf-payfast' ); ?></label>
