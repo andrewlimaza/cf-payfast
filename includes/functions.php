@@ -173,6 +173,7 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 	$random_number = substr( md5( $payment_data['email_address'] ), 0, 10 );
 
 	// Initial information to be passed through to PayFast.
+	// URL Encode the return and cancel URL's to support GET vars being passed back
 	$body = array(
 		"merchant_id" => $payment_data['merchant_id'],
 		"merchant_key"=> $payment_data['merchant_key'],
@@ -196,7 +197,6 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 		$body['passphrase'] = $payment_method['passphrase'];
 	}
 
-
 	// Let's handle the recurring payments now.
 	if ( ! empty( $payment_data['recurring'] ) ) {
 		$recurring_payment_args = array(
@@ -209,6 +209,7 @@ function cf_payfast_process_payment( $processor_data, $proccessid ) {
 		// merge both arrays into one.
 		$body = array_merge( $body, $recurring_payment_args );
 	}
+
 
 	$body = apply_filters( 'cf_payfast_checkout_parameters', $body );
 
